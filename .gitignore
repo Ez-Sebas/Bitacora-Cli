@@ -1,0 +1,29 @@
+# Dependencias
+node_modules/
+data/
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# Builds
+dist/
+build/
+.next/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python (si aplica)
+__pycache__/
+*.pyc
+venv/
+.venv/
