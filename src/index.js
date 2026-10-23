@@ -4,7 +4,10 @@
 
 import { agregarNota, listarNotas, buscarNotas, borrarNota } from './notas.js';
 import { getLongTime, getShortDate } from './fechas.js';
-import { registrarAccion } from './almacen.js';
+import { registrarAccion, respaldarNotas, exportarNotas } from './almacen.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 
 // process.argv = [ruta de node, ruta del script, ...lo que escribió el usuario]
 const [, , comando, ...args] = process.argv;
@@ -125,6 +128,38 @@ function comandoBorrar(args) {
     registrarAccion('borrar', `ok: ${id}`);
 }
 
+function comandoRespaldar() {
+    const destino = respaldarNotas();
+    const nombre = path.basename(destino);
+    console.log(`💾 Respaldo creado: respaldos/${nombre}`);
+    registrarAccion('respaldar', `ok: ${nombre}`);
+}
+
+function comandoExportar(args) {
+    const carpetaDestino = args[0] || os.homedir();
+
+    // Validación: la ruta debe ser absoluta
+    if (!path.isAbsolute(carpetaDestino)) {
+        console.log(`❌ La ruta "${carpetaDestino}" no es absoluta.`);
+        console.log('   Usa una ruta completa, por ejemplo: /Users/tu-usuario/Desktop');
+        registrarAccion('exportar', `error: ruta no absoluta: ${carpetaDestino}`);
+        return;
+    }
+
+    // Validación: la carpeta debe existir
+    if (!fs.existsSync(carpetaDestino)) {
+        console.log(`❌ La carpeta "${carpetaDestino}" no existe.`);
+        registrarAccion('exportar', `error: carpeta inexistente: ${carpetaDestino}`);
+        return;
+    }
+
+    const notas = listarNotas(Infinity);
+    const destino = exportarNotas(notas, carpetaDestino);
+    console.log(`📤 Exportadas ${notas.length} notas a: ${destino}`);
+    registrarAccion('exportar', `ok: ${destino}`);
+}
+
+
 // --- Enrutador: decide qué comando ejecutar ---
 switch (comando) {
     case 'agregar':
@@ -142,6 +177,12 @@ switch (comando) {
     case 'ayuda':
     case undefined:
         mostrarAyuda();
+        break;
+    case 'respaldar':
+    comandoRespaldar();
+        break;
+    case 'exportar':
+    comandoExportar(args);
         break;
     default:
         console.log(`❌ Comando desconocido: "${comando}"`);

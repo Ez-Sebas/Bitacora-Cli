@@ -64,3 +64,46 @@ export function registrarAccion(comando, resultado) {
 export function obtenerRutas() {
     return { DATA_DIR, NOTAS_PATH, BITACORA_PATH };
 }
+
+export function respaldarNotas() {
+    asegurarCarpeta();
+
+    const RESPALDOS_DIR = path.join(import.meta.dirname, '..', 'respaldos');
+    fs.mkdirSync(RESPALDOS_DIR, { recursive: true });
+
+    // Marca de tiempo en formato seguro para nombres de archivo
+    const marca = new Date().toISOString().replace(/[:.]/g, '-');
+    const destino = path.join(RESPALDOS_DIR, `notas_${marca}.json`);
+
+    fs.copyFileSync(NOTAS_PATH, destino);
+    return destino;
+}
+
+export function exportarNotas(notas, carpetaDestino) {
+    const SALIDA_DIR = path.join(import.meta.dirname, '..', 'salida');
+    fs.mkdirSync(SALIDA_DIR, { recursive: true });
+
+    const origen = path.join(SALIDA_DIR, 'exportacion.txt');
+
+    // Armar el contenido del .txt
+    const lineas = notas.map(
+        (nota) => `[${nota.id}] (${nota.etiqueta}) ${nota.texto}`
+    );
+    const contenido = lineas.join('\n') + '\n';
+    fs.writeFileSync(origen, contenido, 'utf-8');
+
+    // Mover: primero intenta rename, si falla por discos distintos, copia + borra
+    const destino = path.join(carpetaDestino, 'exportacion.txt');
+    try {
+        fs.renameSync(origen, destino);
+    } catch (error) {
+        if (error.code === 'EXDEV') {
+        fs.copyFileSync(origen, destino);
+        fs.unlinkSync(origen);
+        } else {
+        throw error;
+        }
+    }
+
+    return destino;
+}
