@@ -1,6 +1,7 @@
 # Dependencias
 node_modules/
 data/
+respaldos/
 
 # Variables de entorno
 .env
