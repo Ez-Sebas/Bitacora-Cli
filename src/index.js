@@ -1,15 +1,10 @@
-#!/usr/bin/env node
-// src/index.js
-// Punto de entrada: lee process.argv y decide qué hacer
-
 import { agregarNota, listarNotas, buscarNotas, borrarNota } from './notas.js';
-import { getLongTime, getShortDate } from './fechas.js';
+import { getLongTime, getShortDate } from 'fechas-bitacora-sebastianzuleta-npm';
 import { registrarAccion, respaldarNotas, exportarNotas } from './almacen.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-// process.argv = [ruta de node, ruta del script, ...lo que escribió el usuario]
 const [, , comando, ...args] = process.argv;
 
 function mostrarAyuda() {
@@ -36,7 +31,6 @@ function comandoAgregar(args) {
     const texto = args[0];
     const etiqueta = args[1] || 'general';
 
-    // Validación: texto vacío o ausente
     if (!texto || texto.trim() === '') {
         console.log('❌ Falta el texto de la nota.');
         console.log('   Uso: npm start -- agregar "texto" [etiqueta]');
@@ -60,7 +54,6 @@ function comandoAgregar(args) {
 function comandoListar(args) {
     let cantidad = parseInt(args[0], 10);
 
-    // Validación: N no numérico o <= 0 -> valor por defecto e informar
     if (isNaN(cantidad) || cantidad <= 0) {
         if (args[0] !== undefined) {
         console.log(`⚠️  "${args[0]}" no es un número válido. Se usarán las últimas 5.`);
@@ -138,7 +131,6 @@ function comandoRespaldar() {
 function comandoExportar(args) {
     const carpetaDestino = args[0] || os.homedir();
 
-    // Validación: la ruta debe ser absoluta
     if (!path.isAbsolute(carpetaDestino)) {
         console.log(`❌ La ruta "${carpetaDestino}" no es absoluta.`);
         console.log('   Usa una ruta completa, por ejemplo: /Users/tu-usuario/Desktop');
@@ -146,7 +138,6 @@ function comandoExportar(args) {
         return;
     }
 
-    // Validación: la carpeta debe existir
     if (!fs.existsSync(carpetaDestino)) {
         console.log(`❌ La carpeta "${carpetaDestino}" no existe.`);
         registrarAccion('exportar', `error: carpeta inexistente: ${carpetaDestino}`);
@@ -159,8 +150,6 @@ function comandoExportar(args) {
     registrarAccion('exportar', `ok: ${destino}`);
 }
 
-
-// --- Enrutador: decide qué comando ejecutar ---
 switch (comando) {
     case 'agregar':
         comandoAgregar(args);
